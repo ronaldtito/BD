@@ -1,0 +1,64 @@
+CREATE VIEW lemaxdog as
+SELECT lemas.id_lema, lemas.lema ,lemas2.id_lema2, lemas2.lema2 FROM lemas CROSS jOIN
+(SELECT lemas.id_lema as id_lema2, lemas.lema as lema2 FROM lemas WHERE lema = 'dog') as lemas2;
+
+SELECT * FROM lemaxdog;
+
+SELECT * FROM lemaxdog LEFT jOIN relaciones ON 
+(lemaxdog.id_lema2 =relaciones.id_lema1 AND lemaxdog.id_lema =relaciones.id_lema2)OR 
+(lemaxdog.id_lema2 =relaciones.id_lema2 AND lemaxdog.id_lema =relaciones.id_lema1) ; 
+
+
+SELECT * FROM lemaxdog LEFT JOIN (
+
+SELECT relaciones.id_lema1,relaciones.id_lema2, relaciones.weight FROM lemaxdog INNER jOIN relaciones ON 
+(lemaxdog.id_lema2 =relaciones.id_lema1 AND lemaxdog.id_lema =relaciones.id_lema2)
+UNION
+SELECT relaciones.id_lema2,relaciones.id_lema1, relaciones.weight FROM lemaxdog INNER jOIN relaciones ON 
+(lemaxdog.id_lema2 =relaciones.id_lema2 AND lemaxdog.id_lema =relaciones.id_lema1)  ) AS lem
+
+on 
+ (lemaxdog.id_lema2 =lem.id_lema1 AND lemaxdog.id_lema =lem.id_lema2)
+
+----------------------Partial =----------------------
+SELECT * FROM lemaxdog LEFT JOIN (
+
+SELECT relaciones.id_lema1,relaciones.id_lema2, relaciones.weight FROM lemaxdog INNER jOIN relaciones ON 
+(lemaxdog.id_lema2 =relaciones.id_lema1 AND lemaxdog.id_lema =relaciones.id_lema2)
+UNION
+SELECT relaciones.id_lema2,relaciones.id_lema1, relaciones.weight FROM lemaxdog INNER jOIN relaciones ON 
+(lemaxdog.id_lema2 =relaciones.id_lema2 AND lemaxdog.id_lema =relaciones.id_lema1)  ) AS lem
+
+on 
+ (lemaxdog.id_lema2 =lem.id_lema1 AND lemaxdog.id_lema =lem.id_lema2)
+ 
+
+------------------------------------------------
+
+
+SELECT lemaxdog.id_lema, lemaxdog.lema , lemaxdog.id_lema2, lemaxdog.lema2 ,CASE WHEN SUM(lem.weight)
+ IS NULL THEN 0 ELSE SUM(lem.weight) END FROM lemaxdog LEFT JOIN (
+
+SELECT relaciones.id_lema1,relaciones.id_lema2, relaciones.weight FROM lemaxdog INNER jOIN relaciones ON 
+(lemaxdog.id_lema2 =relaciones.id_lema1 AND lemaxdog.id_lema =relaciones.id_lema2)
+UNION
+SELECT relaciones.id_lema2,relaciones.id_lema1, relaciones.weight FROM lemaxdog INNER jOIN relaciones ON 
+(lemaxdog.id_lema2 =relaciones.id_lema2 AND lemaxdog.id_lema =relaciones.id_lema1)  ) AS lem
+
+on 
+ (lemaxdog.id_lema2 =lem.id_lema1 AND lemaxdog.id_lema =lem.id_lema2)
+ 
+ GROUP BY (lemaxdog.id_lema, lemaxdog.lema , lemaxdog.id_lema2, lemaxdog.lema2) HAVING Count(*)>=0
+ order by lemaxdog.lema
+
+------------------------------------
+
+SELECT id_lema1, id_lema2, weight
+	FROM public.relaciones11;
+	
+SELECT id_lema2, id_lema1 , SUM (weight) FROM relaciones11  GROUP BY id_lema2, id_lema1 order by id_lema1
+
+SELECT * FROM  
+ relaciones11 inner JOIN
+(select id_lema2 as id_lema1,id_lema1 as id_lema2,weight FROM relaciones11) as r22
+ON (r22.id_lema1 = relaciones11.id_lema1 AND r22.id_lema2 = relaciones11.id_lema2)
